@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Blocks, MCPIcon, AttachmentIcon } from '@librechat/client';
+import { Blocks, MCPIcon, AttachmentIcon, DollarSign } from '@librechat/client';
 import { Database, Bookmark, Settings2, ArrowRightToLine, MessageSquareQuote } from 'lucide-react';
 import {
   Permissions,
@@ -19,6 +19,7 @@ import PromptsAccordion from '~/components/Prompts/PromptsAccordion';
 import Parameters from '~/components/SidePanel/Parameters/Panel';
 import { MemoryPanel } from '~/components/SidePanel/Memories';
 import FilesPanel from '~/components/SidePanel/Files/Panel';
+import { CostPanel } from '~/components/SidePanel/Costs';
 import { useHasAccess, useMCPServerManager } from '~/hooks';
 
 export default function useSideNavLinks({
@@ -147,6 +148,14 @@ export default function useSideNavLinks({
       icon: AttachmentIcon,
       id: 'files',
       Component: FilesPanel,
+    });
+
+    links.push({
+      title: 'com_sidepanel_conversation_cost',
+      label: '',
+      icon: DollarSign,
+      id: 'costs',
+      Component: CostPanel,
     });
 
     if (hasAccessToBookmarks) {

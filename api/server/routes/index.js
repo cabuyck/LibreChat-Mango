@@ -26,6 +26,7 @@ const auth = require('./auth');
 const keys = require('./keys');
 const user = require('./user');
 const mcp = require('./mcp');
+const conversationCost = require('./conversationCost');
 
 module.exports = {
   mcp,
@@ -49,6 +50,7 @@ module.exports = {
   actions,
   presets,
   balance,
+  conversationCost,
   messages,
   memories,
   endpoints,

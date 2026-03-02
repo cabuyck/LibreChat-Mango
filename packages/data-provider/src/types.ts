@@ -683,3 +683,15 @@ export type TBalanceResponse = {
   lastRefill?: Date;
   refillAmount?: number;
 };
+
+export type TConversationCostResponse = {
+  totalCost: number;
+  hasData: boolean;
+  currency: 'USD';
+  breakdown?: {
+    inputTokens: number;
+    outputTokens: number;
+    cacheWriteTokens: number;
+    cacheReadTokens: number;
+  };
+};

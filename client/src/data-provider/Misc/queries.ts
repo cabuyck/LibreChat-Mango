@@ -43,3 +43,25 @@ export const useGetSearchEnabledQuery = (
     enabled: (config?.enabled ?? true) === true && queriesEnabled,
   });
 };
+
+export const useGetConversationCost = (
+  conversationId: string | null | undefined,
+  config?: UseQueryOptions<t.TConversationCostResponse>,
+): QueryObserverResult<t.TConversationCostResponse> => {
+  const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
+  return useQuery<t.TConversationCostResponse>(
+    [QueryKeys.conversationCost, conversationId],
+    () => dataService.getConversationCost(conversationId ?? ''),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      ...config,
+      enabled:
+        (config?.enabled ?? true) === true &&
+        queriesEnabled &&
+        conversationId != null &&
+        conversationId !== '',
+    },
+  );
+};

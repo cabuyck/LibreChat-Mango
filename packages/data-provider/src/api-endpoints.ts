@@ -44,6 +44,9 @@ export const user = () => `${BASE_URL}/api/user`;
 
 export const balance = () => `${BASE_URL}/api/balance`;
 
+export const conversationCost = (conversationId: string) =>
+  `${BASE_URL}/api/conversations/cost/${encodeURIComponent(conversationId)}`;
+
 export const userPlugins = () => `${BASE_URL}/api/user/plugins`;
 
 export const deleteUser = () => `${BASE_URL}/api/user/delete`;
