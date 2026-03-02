@@ -22,9 +22,6 @@ jest.mock('dayjs', () => {
     toISOString: () => '2024-04-29T16:34:56.000Z',
   });
 
-  // Add any static methods needed
-  mockDayjs.extend = jest.fn();
-
   return mockDayjs;
 });
 
@@ -48,12 +45,12 @@ describe('replaceSpecialVars', () => {
   test('should replace {{current_date}} with the current date', () => {
     const result = replaceSpecialVars({ text: 'Today is {{current_date}}' });
     // dayjs().day() returns 1 for Monday (April 29, 2024 is a Monday)
-    expect(result).toBe('Today is 2024-04-29 (1)');
+    expect(result).toBe('Today is 2024-04-29 (Monday)');
   });
 
   test('should replace {{current_datetime}} with the current datetime', () => {
     const result = replaceSpecialVars({ text: 'Now is {{current_datetime}}' });
-    expect(result).toBe('Now is 2024-04-29 12:34:56 (1)');
+    expect(result).toBe('Now is 2024-04-29 12:34:56 (Monday)');
   });
 
   test('should replace {{iso_datetime}} with the ISO datetime', () => {
@@ -90,7 +87,7 @@ describe('replaceSpecialVars', () => {
       user: mockUser,
     });
     expect(result).toBe(
-      'Hello Test User! Today is 2024-04-29 (1) and the time is 2024-04-29 12:34:56 (1). ISO: 2024-04-29T16:34:56.000Z',
+      'Hello Test User! Today is 2024-04-29 (Monday) and the time is 2024-04-29 12:34:56 (Monday). ISO: 2024-04-29T16:34:56.000Z',
     );
   });
 
@@ -99,7 +96,7 @@ describe('replaceSpecialVars', () => {
       text: 'Date: {{CURRENT_DATE}}, User: {{Current_User}}',
       user: mockUser,
     });
-    expect(result).toBe('Date: 2024-04-29 (1), User: Test User');
+    expect(result).toBe('Date: 2024-04-29 (Monday), User: Test User');
   });
 
   test('should confirm all specialVariables from config.ts get parsed', () => {
@@ -120,10 +117,51 @@ describe('replaceSpecialVars', () => {
     });
 
     // Verify the expected replacements
-    expect(result).toContain('2024-04-29 (1)'); // current_date
-    expect(result).toContain('2024-04-29 12:34:56 (1)'); // current_datetime
+    expect(result).toContain('2024-04-29 (Monday)'); // current_date
+    expect(result).toContain('2024-04-29 12:34:56 (Monday)'); // current_datetime
     expect(result).toContain('2024-04-29T16:34:56.000Z'); // iso_datetime
     expect(result).toContain('Test User'); // current_user
+  });
+
+  // Timezone tests
+  test('should replace {{current_datetime:America/Chicago}} with timezone-aware datetime', () => {
+    const result = replaceSpecialVars({ text: 'Time in Chicago: {{current_datetime:America/Chicago}}' });
+    // Check format instead of exact value since it uses real time
+    expect(result).toMatch(/Time in Chicago: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \(\w+\)/);
+    expect(result).toContain('Time in Chicago:');
+  });
+
+  test('should replace {{current_date:Europe/London}} with timezone-aware date', () => {
+    const result = replaceSpecialVars({ text: 'Date in London: {{current_date:Europe/London}}' });
+    expect(result).toMatch(/Date in London: \d{4}-\d{2}-\d{2} \(\w+\)/);
+  });
+
+  test('should handle multiple timezone-aware variables', () => {
+    const result = replaceSpecialVars({
+      text: 'Local: {{current_datetime}}, Chicago: {{current_datetime:America/Chicago}}',
+    });
+    expect(result).toMatch(/Local: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \(\w+\), Chicago: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \(\w+\)/);
+  });
+
+  test('should fall back to local time for invalid timezone', () => {
+    const result = replaceSpecialVars({
+      text: 'Invalid TZ: {{current_datetime:Invalid/Timezone}}',
+    });
+    expect(result).toBe('Invalid TZ: 2024-04-29 12:34:56 (Monday)');
+  });
+
+  test('should fall back to local time for empty timezone parameter', () => {
+    const result = replaceSpecialVars({
+      text: 'Empty TZ: {{current_datetime:}}',
+    });
+    expect(result).toBe('Empty TZ: 2024-04-29 12:34:56 (Monday)');
+  });
+
+  test('should be case-insensitive for timezone-aware variables', () => {
+    const result = replaceSpecialVars({
+      text: 'Date: {{CURRENT_DATE:America/Chicago}}',
+    });
+    expect(result).toMatch(/Date: \d{4}-\d{2}-\d{2} \(\w+\)/);
   });
 });
 

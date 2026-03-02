@@ -18,6 +18,16 @@ import {
 import { bedrockInputSchema } from './bedrock';
 import { alternateName } from './config';
 
+const DAY_NAMES = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+] as const;
+
 type EndpointSchema =
   | typeof openAISchema
   | typeof googleSchema
@@ -408,14 +418,81 @@ export function replaceSpecialVars({ text, user }: { text: string; user?: t.TUse
     return result;
   }
 
-  // e.g., "2024-04-29 (1)" (1=Monday)
-  const currentDate = dayjs().format('YYYY-MM-DD');
-  const dayNumber = dayjs().day();
-  const combinedDate = `${currentDate} (${dayNumber})`;
-  result = result.replace(/{{current_date}}/gi, combinedDate);
+  // Helper function to get date info with optional timezone using Intl API
+  const getDateInfo = (tzParam: string | null) => {
+    const now = new Date();
 
-  const currentDatetime = dayjs().format('YYYY-MM-DD HH:mm:ss');
-  result = result.replace(/{{current_datetime}}/gi, `${currentDatetime} (${dayNumber})`);
+    if (tzParam) {
+      try {
+        // Validate timezone by trying to format with it
+        const dateFormatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: tzParam,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        });
+        const datetimeFormatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: tzParam,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        });
+        const dayFormatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: tzParam,
+          weekday: 'long',
+        });
+
+        const dateParts = dateFormatter.formatToParts(now);
+        const datetimeParts = datetimeFormatter.formatToParts(now);
+        const dayName = dayFormatter.format(now);
+
+        // Extract date components
+        const year = dateParts.find((p) => p.type === 'year')?.value ?? '';
+        const month = dateParts.find((p) => p.type === 'month')?.value ?? '';
+        const day = dateParts.find((p) => p.type === 'day')?.value ?? '';
+        const hour = datetimeParts.find((p) => p.type === 'hour')?.value ?? '';
+        const minute = datetimeParts.find((p) => p.type === 'minute')?.value ?? '';
+        const second = datetimeParts.find((p) => p.type === 'second')?.value ?? '';
+
+        const date = `${year}-${month}-${day}`;
+        const datetime = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+
+        return { date, datetime, dayName };
+      } catch {
+        // Invalid timezone, fall back to local time
+        const dayObj = dayjs();
+        return {
+          date: dayObj.format('YYYY-MM-DD'),
+          datetime: dayObj.format('YYYY-MM-DD HH:mm:ss'),
+          dayName: DAY_NAMES[dayObj.day()],
+        };
+      }
+    }
+
+    // No timezone specified, use local time
+    const dayObj = dayjs();
+    return {
+      date: dayObj.format('YYYY-MM-DD'),
+      datetime: dayObj.format('YYYY-MM-DD HH:mm:ss'),
+      dayName: DAY_NAMES[dayObj.day()],
+    };
+  };
+
+  // Replace {{current_date}} and {{current_date:timezone}}
+  result = result.replace(/{{current_date(?::([^}]+))?}}/gi, (_, tz) => {
+    const { date, dayName } = getDateInfo(tz);
+    return `${date} (${dayName})`;
+  });
+
+  // Replace {{current_datetime}} and {{current_datetime:timezone}}
+  result = result.replace(/{{current_datetime(?::([^}]+))?}}/gi, (_, tz) => {
+    const { datetime, dayName } = getDateInfo(tz);
+    return `${datetime} (${dayName})`;
+  });
 
   const isoDatetime = dayjs().toISOString();
   result = result.replace(/{{iso_datetime}}/gi, isoDatetime);
