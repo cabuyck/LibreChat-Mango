@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { Blocks, MCPIcon, AttachmentIcon, DollarSign } from '@librechat/client';
-import { Database, Bookmark, Settings2, ArrowRightToLine, MessageSquareQuote } from 'lucide-react';
+import { Blocks, MCPIcon, AttachmentIcon } from '@librechat/client';
+import { Database, Bookmark, Settings2, ArrowRightToLine, MessageSquareQuote, DollarSign } from 'lucide-react';
 import {
   Permissions,
   EModelEndpoint,
