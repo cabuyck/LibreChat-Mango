@@ -582,6 +582,13 @@ export default function useEventHandlers({
       } finally {
         setShowStopButton(false);
         setIsSubmitting(false);
+        // Invalidate conversation cost to refresh after message completion
+        if (conversation?.conversationId) {
+          queryClient.invalidateQueries({
+            queryKey: [QueryKeys.conversationCost, conversation.conversationId],
+            refetchType: 'active',
+          });
+        }
       }
     },
     [
