@@ -22,7 +22,7 @@ export default function CostPanel() {
   const localize = useLocalize();
   const { conversationId } = useChatContext();
 
-  const { data: costData, isLoading } = useGetConversationCost(conversationId ?? null);
+  const { data: costData, isFetching } = useGetConversationCost(conversationId ?? null);
 
   const displayCost = useMemo(() => {
     if (!costData || !costData.hasData) {
@@ -31,7 +31,37 @@ export default function CostPanel() {
     return formatCost(costData.totalCost);
   }, [costData]);
 
-  if (isLoading) {
+  // Handle "new" conversation or no conversation state
+  if (!conversationId || conversationId === 'new') {
+    return (
+      <div className="flex h-full w-full flex-col p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+            <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" aria-hidden="true" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-text-primary">
+              {localize('com_sidepanel_conversation_cost')}
+            </p>
+            <p className="text-xs text-text-secondary">{localize('com_ui_estimated_total_cost')}</p>
+          </div>
+        </div>
+        <div className="mt-4 rounded-lg border border-dashed border-border-medium bg-transparent p-4">
+          <div className="text-center">
+            <p className="text-sm text-text-secondary">
+              {localize('com_ui_no_cost_data_available')}
+            </p>
+            <p className="mt-1 text-xs text-text-tertiary">
+              {localize('com_ui_cost_data_new_conversations')}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading spinner only when actively fetching
+  if (isFetching) {
     return (
       <div className="flex h-full w-full items-center justify-center p-4">
         <Spinner />
