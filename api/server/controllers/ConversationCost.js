@@ -34,8 +34,13 @@ async function getConversationCost(req, res) {
       }
 
       if (tx.tokenType === 'prompt') {
+        // For structured tokens (with caching), inputTokens is set
         if (tx.inputTokens !== undefined) {
           totalPromptTokens += Math.abs(tx.inputTokens);
+        }
+        // For simple tokens, check rawAmount as fallback
+        else if (tx.rawAmount !== undefined) {
+          totalPromptTokens += Math.abs(tx.rawAmount);
         }
         if (tx.writeTokens !== undefined) {
           totalCacheWriteTokens += Math.abs(tx.writeTokens);
