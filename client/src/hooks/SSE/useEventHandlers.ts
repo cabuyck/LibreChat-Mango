@@ -565,6 +565,13 @@ export default function useEventHandlers({
             return update;
           });
 
+          // Invalidate conversation cost after conversation is updated
+          if (conversation.conversationId) {
+            queryClient.invalidateQueries({
+              queryKey: [QueryKeys.conversationCost, conversation.conversationId],
+            });
+          }
+
           if (conversation.conversationId && submission.ephemeralAgent) {
             applyAgentTemplate({
               targetId: conversation.conversationId,
@@ -582,11 +589,10 @@ export default function useEventHandlers({
       } finally {
         setShowStopButton(false);
         setIsSubmitting(false);
-        // Invalidate conversation cost to refresh after message completion
+        // Also invalidate conversation cost for cases where setConversation isn't called
         if (conversation?.conversationId) {
           queryClient.invalidateQueries({
             queryKey: [QueryKeys.conversationCost, conversation.conversationId],
-            refetchType: 'active',
           });
         }
       }
