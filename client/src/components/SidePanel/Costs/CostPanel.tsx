@@ -20,7 +20,8 @@ const formatCost = (cost: number): string => {
 
 export default function CostPanel() {
   const localize = useLocalize();
-  const { conversationId } = useChatContext();
+  const { conversation } = useChatContext();
+  const conversationId = conversation?.conversationId;
 
   const { data: costData, isFetching } = useGetConversationCost(conversationId ?? null);
 
