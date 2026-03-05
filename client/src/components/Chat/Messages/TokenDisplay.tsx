@@ -50,12 +50,11 @@ const TokenDisplay = ({ message, isLast }: TokenDisplayProps) => {
     ? localize('com_ui_input_tokens')
     : localize('com_ui_output_tokens');
 
-  // Don't render if no token data available
-  if (!tokenCount || tokenCount === 0) {
-    return null;
-  }
-
   const cacheStatus = getCacheStatus(message);
+
+  // For now, always render to test positioning
+  // TODO: Remove this when token data is properly populated
+  const hasTokenData = tokenCount > 0;
 
   return (
     <div
@@ -67,14 +66,18 @@ const TokenDisplay = ({ message, isLast }: TokenDisplayProps) => {
         'transition-opacity duration-200',
       )}
     >
-      {/* Token Count */}
-      <span className="flex items-center gap-1">
-        <span>{tokenLabel}:</span>
-        <span className="font-medium text-text-primary">{formatNumber(tokenCount)}</span>
-      </span>
+      {/* Token Count or placeholder */}
+      {hasTokenData ? (
+        <span className="flex items-center gap-1">
+          <span>{tokenLabel}:</span>
+          <span className="font-medium text-text-primary">{formatNumber(tokenCount)}</span>
+        </span>
+      ) : (
+        <span className="text-text-tertiary opacity-60">No token data</span>
+      )}
 
       {/* Cache Status Badge */}
-      {cacheStatus !== null && cacheStatus !== 'none' && (
+      {hasTokenData && cacheStatus !== null && cacheStatus !== 'none' && (
         <span
           className={cn(
             'rounded px-1.5 py-0.5 text-[10px] font-medium',

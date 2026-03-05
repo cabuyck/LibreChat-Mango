@@ -172,29 +172,27 @@ const MessageRender = memo(
               <PlaceholderRow />
             ) : (
               <SubRow classes="text-xs">
-                <div className="flex flex-wrap items-center justify-between gap-2 lg:justify-start">
+                <div className="flex flex-wrap items-center gap-2">
                   <TokenDisplay message={msg} isLast={isLast} />
-                  <div className="flex items-center gap-2">
-                    <SiblingSwitch
-                      siblingIdx={siblingIdx}
-                      siblingCount={siblingCount}
-                      setSiblingIdx={setSiblingIdx}
-                    />
-                    <HoverButtons
-                      index={index}
-                      isEditing={edit}
-                      message={msg}
-                      enterEdit={enterEdit}
-                      isSubmitting={isSubmitting}
-                      conversation={conversation ?? null}
-                      regenerate={handleRegenerateMessage}
-                      copyToClipboard={copyToClipboard}
-                      handleContinue={handleContinue}
-                      latestMessage={latestMessage}
-                      handleFeedback={handleFeedback}
-                      isLast={isLast}
-                    />
-                  </div>
+                  <SiblingSwitch
+                    siblingIdx={siblingIdx}
+                    siblingCount={siblingCount}
+                    setSiblingIdx={setSiblingIdx}
+                  />
+                  <HoverButtons
+                    index={index}
+                    isEditing={edit}
+                    message={msg}
+                    enterEdit={enterEdit}
+                    isSubmitting={isSubmitting}
+                    conversation={conversation ?? null}
+                    regenerate={handleRegenerateMessage}
+                    copyToClipboard={copyToClipboard}
+                    handleContinue={handleContinue}
+                    latestMessage={latestMessage}
+                    handleFeedback={handleFeedback}
+                    isLast={isLast}
+                  />
                 </div>
               </SubRow>
             )}
