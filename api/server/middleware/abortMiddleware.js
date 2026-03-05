@@ -25,10 +25,17 @@ const { abortRun } = require('./abortRun');
  * @param {Object} params
  * @param {string} params.userId - User ID
  * @param {string} params.conversationId - Conversation ID
+ * @param {string} [params.messageId] - Message ID
  * @param {Array<Object>} params.collectedUsage - Usage metadata from all models
  * @param {string} [params.fallbackModel] - Fallback model name if not in usage
  */
-async function spendCollectedUsage({ userId, conversationId, collectedUsage, fallbackModel }) {
+async function spendCollectedUsage({
+  userId,
+  conversationId,
+  messageId,
+  collectedUsage,
+  fallbackModel,
+}) {
   if (!collectedUsage || collectedUsage.length === 0) {
     return;
   }
@@ -51,6 +58,7 @@ async function spendCollectedUsage({ userId, conversationId, collectedUsage, fal
     const txMetadata = {
       context: 'abort',
       conversationId,
+      messageId,
       user: userId,
       model: usage.model ?? fallbackModel,
     };
@@ -142,6 +150,7 @@ async function abortMessage(req, res) {
     await spendCollectedUsage({
       userId,
       conversationId: jobData?.conversationId,
+      messageId: jobData?.responseMessageId,
       collectedUsage,
       fallbackModel: jobData?.model,
     });

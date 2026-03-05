@@ -613,6 +613,7 @@ class AgentClient extends BaseClient {
    * @param {Object} params
    * @param {string} [params.model]
    * @param {string} [params.context='message']
+   * @param {string} [params.messageId]
    * @param {AppConfig['balance']} [params.balance]
    * @param {AppConfig['transactions']} [params.transactions]
    * @param {UsageMetadata[]} [params.collectedUsage=this.collectedUsage]
@@ -622,6 +623,7 @@ class AgentClient extends BaseClient {
     balance,
     transactions,
     context = 'message',
+    messageId,
     collectedUsage = this.collectedUsage,
   }) {
     if (!collectedUsage || !collectedUsage.length) {
@@ -664,6 +666,7 @@ class AgentClient extends BaseClient {
         balance,
         transactions,
         conversationId: this.conversationId,
+        messageId: messageId ?? this.messageId,
         user: this.user ?? this.options.req.user?.id,
         endpointTokenConfig: this.options.endpointTokenConfig,
         model: usage.model ?? model ?? this.model ?? this.options.agent.model_parameters.model,
@@ -935,6 +938,7 @@ class AgentClient extends BaseClient {
         if (!wasAborted) {
           await this.recordCollectedUsage({
             context: 'message',
+            messageId: this.responseMessageId,
             balance: balanceConfig,
             transactions: transactionsConfig,
           });

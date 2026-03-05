@@ -219,6 +219,47 @@ async function updateMessageText(req, { messageId, text }) {
 }
 
 /**
+ * Updates the token breakdown for a message.
+ *
+ * @async
+ * @function updateMessageTokens
+ * @param {Object} params - The update data object.
+ * @param {string} params.messageId - The unique identifier for the message.
+ * @param {string} params.user - The user ID.
+ * @param {number} [params.inputTokens] - The number of input tokens.
+ * @param {number} [params.outputTokens] - The number of output tokens.
+ * @param {number} [params.cacheWriteTokens] - The number of cache write tokens.
+ * @param {number} [params.cacheReadTokens] - The number of cache read tokens.
+ * @returns {Promise<void>}
+ * @throws {Error} If there is an error in updating the message.
+ */
+async function updateMessageTokens({
+  messageId,
+  user,
+  inputTokens = 0,
+  outputTokens = 0,
+  cacheWriteTokens = 0,
+  cacheReadTokens = 0,
+}) {
+  try {
+    const tokenCount = inputTokens + outputTokens + cacheWriteTokens + cacheReadTokens;
+    await Message.findOneAndUpdate(
+      { messageId, user },
+      {
+        inputTokens,
+        outputTokens,
+        cacheWriteTokens,
+        cacheReadTokens,
+        tokenCount,
+      },
+    );
+  } catch (err) {
+    logger.error('Error updating message tokens:', err);
+    throw err;
+  }
+}
+
+/**
  * Updates a message.
  *
  * @async
@@ -363,6 +404,7 @@ module.exports = {
   saveMessage,
   bulkSaveMessages,
   recordMessage,
+  updateMessageTokens,
   updateMessageText,
   updateMessage,
   deleteMessagesSince,

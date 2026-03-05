@@ -48,6 +48,18 @@ const messageSchema: Schema<IMessage> = new Schema(
     summaryTokenCount: {
       type: Number,
     },
+    inputTokens: {
+      type: Number,
+    },
+    outputTokens: {
+      type: Number,
+    },
+    cacheWriteTokens: {
+      type: Number,
+    },
+    cacheReadTokens: {
+      type: Number,
+    },
     sender: {
       type: String,
       meiliIndex: true,

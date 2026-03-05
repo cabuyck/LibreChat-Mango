@@ -4,6 +4,7 @@ import mongoose, { Schema, Document, Types } from 'mongoose';
 export interface ITransaction extends Document {
   user: Types.ObjectId;
   conversationId?: string;
+  messageId?: string;
   tokenType: 'prompt' | 'completion' | 'credits';
   model?: string;
   context?: string;
@@ -30,6 +31,11 @@ const transactionSchema: Schema<ITransaction> = new Schema(
       type: String,
       ref: 'Conversation',
       index: true,
+    },
+    messageId: {
+      type: String,
+      index: true,
+      ref: 'Message',
     },
     tokenType: {
       type: String,

@@ -494,6 +494,7 @@ const OpenAIChatCompletionController = async (req, res) => {
       {
         user: userId,
         conversationId,
+        messageId: requestId,
         collectedUsage,
         context: 'message',
         balance: balanceConfig,

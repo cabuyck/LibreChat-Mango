@@ -14,6 +14,10 @@ export interface IMessage extends Document {
   parentMessageId?: string;
   tokenCount?: number;
   summaryTokenCount?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  cacheWriteTokens?: number;
+  cacheReadTokens?: number;
   sender?: string;
   text?: string;
   summary?: string;

@@ -17,7 +17,7 @@ const spendTokens = async (txData, tokenUsage) => {
   logger.debug(
     `[spendTokens] conversationId: ${txData.conversationId}${
       txData?.context ? ` | Context: ${txData?.context}` : ''
-    } | Token usage: `,
+    }${txData?.messageId ? ` | messageId: ${txData?.messageId}` : ''} | Token usage: `,
     {
       promptTokens,
       completionTokens,
@@ -29,6 +29,7 @@ const spendTokens = async (txData, tokenUsage) => {
     if (promptTokens !== undefined) {
       prompt = await createTransaction({
         ...txData,
+        messageId: txData.messageId,
         tokenType: 'prompt',
         rawAmount: promptTokens === 0 ? 0 : -normalizedPromptTokens,
         inputTokenCount: normalizedPromptTokens,
@@ -38,9 +39,25 @@ const spendTokens = async (txData, tokenUsage) => {
     if (completionTokens !== undefined) {
       completion = await createTransaction({
         ...txData,
+        messageId: txData.messageId,
         tokenType: 'completion',
         rawAmount: completionTokens === 0 ? 0 : -Math.max(completionTokens, 0),
         inputTokenCount: normalizedPromptTokens,
+      });
+    }
+
+    // Update message with token breakdown
+    if (txData.messageId) {
+      const { updateMessageTokens } = require('./Message');
+      updateMessageTokens({
+        messageId: txData.messageId,
+        user: txData.user,
+        inputTokens: normalizedPromptTokens,
+        outputTokens: Math.max(completionTokens ?? 0, 0),
+        cacheWriteTokens: 0,
+        cacheReadTokens: 0,
+      }).catch(err => {
+        logger.error('[spendTokens] Failed to update message tokens', err);
       });
     }
 
@@ -81,7 +98,7 @@ const spendStructuredTokens = async (txData, tokenUsage) => {
   logger.debug(
     `[spendStructuredTokens] conversationId: ${txData.conversationId}${
       txData?.context ? ` | Context: ${txData?.context}` : ''
-    } | Token usage: `,
+    }${txData?.messageId ? ` | messageId: ${txData?.messageId}` : ''} | Token usage: `,
     {
       promptTokens,
       completionTokens,
@@ -89,13 +106,15 @@ const spendStructuredTokens = async (txData, tokenUsage) => {
   );
   let prompt, completion;
   try {
+    const input = Math.max(promptTokens?.input ?? 0, 0);
+    const write = Math.max(promptTokens?.write ?? 0, 0);
+    const read = Math.max(promptTokens?.read ?? 0, 0);
+    const totalInputTokens = input + write + read;
+
     if (promptTokens) {
-      const input = Math.max(promptTokens.input ?? 0, 0);
-      const write = Math.max(promptTokens.write ?? 0, 0);
-      const read = Math.max(promptTokens.read ?? 0, 0);
-      const totalInputTokens = input + write + read;
       prompt = await createStructuredTransaction({
         ...txData,
+        messageId: txData.messageId,
         tokenType: 'prompt',
         inputTokens: -input,
         writeTokens: -write,
@@ -105,16 +124,27 @@ const spendStructuredTokens = async (txData, tokenUsage) => {
     }
 
     if (completionTokens) {
-      const totalInputTokens = promptTokens
-        ? Math.max(promptTokens.input ?? 0, 0) +
-          Math.max(promptTokens.write ?? 0, 0) +
-          Math.max(promptTokens.read ?? 0, 0)
-        : undefined;
       completion = await createTransaction({
         ...txData,
+        messageId: txData.messageId,
         tokenType: 'completion',
         rawAmount: -Math.max(completionTokens, 0),
         inputTokenCount: totalInputTokens,
+      });
+    }
+
+    // Update message with token breakdown
+    if (txData.messageId) {
+      const { updateMessageTokens } = require('./Message');
+      updateMessageTokens({
+        messageId: txData.messageId,
+        user: txData.user,
+        inputTokens,
+        outputTokens: Math.max(completionTokens ?? 0, 0),
+        cacheWriteTokens: write,
+        cacheReadTokens: read,
+      }).catch(err => {
+        logger.error('[spendStructuredTokens] Failed to update message tokens', err);
       });
     }
 

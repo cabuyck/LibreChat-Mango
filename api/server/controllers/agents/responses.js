@@ -509,6 +509,7 @@ const createResponse = async (req, res) => {
         {
           user: userId,
           conversationId,
+          messageId: responseId,
           collectedUsage,
           context: 'message',
           balance: balanceConfig,
@@ -653,6 +654,7 @@ const createResponse = async (req, res) => {
         {
           user: userId,
           conversationId,
+          messageId: responseId,
           collectedUsage,
           context: 'message',
           balance: balanceConfig,
