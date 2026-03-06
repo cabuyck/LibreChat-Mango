@@ -512,7 +512,9 @@ const createResponse = async (req, res) => {
       // Record token usage against balance (fire-and-forget after stream closes)
       const balanceConfig = getBalanceConfig(req.config);
       const transactionsConfig = getTransactionsConfig(req.config);
+      // Schedule all post-response work to happen after stream closes
       setImmediate(() => {
+        // Record token usage against balance
         recordCollectedUsage(
           { spendTokens, spendStructuredTokens },
           {
@@ -528,36 +530,38 @@ const createResponse = async (req, res) => {
         ).catch((err) => {
           logger.error('[Responses API] Error recording usage:', err);
         });
-      });
 
-      // Save to database if store: true
-      if (request.store === true) {
-        try {
-          // Save conversation
-          await saveConversation(req, conversationId, agentId, agent);
+        // Save to database if store: true
+        if (request.store === true) {
+          (async () => {
+            try {
+              // Save conversation
+              await saveConversation(req, conversationId, agentId, agent);
 
-          // Save input messages
-          await saveInputMessages(req, conversationId, inputMessages, agentId);
+              // Save input messages
+              await saveInputMessages(req, conversationId, inputMessages, agentId);
 
-          // Build response for saving (use tracker with buildResponse for streaming)
-          const finalResponse = buildResponse(context, tracker, 'completed');
-          await saveResponseOutput(req, conversationId, responseId, finalResponse, agentId);
+              // Build response for saving (use tracker with buildResponse for streaming)
+              const finalResponse = buildResponse(context, tracker, 'completed');
+              await saveResponseOutput(req, conversationId, responseId, finalResponse, agentId);
 
-          logger.debug(
-            `[Responses API] Stored response ${responseId} in conversation ${conversationId}`,
-          );
-        } catch (saveError) {
-          logger.error('[Responses API] Error saving response:', saveError);
-          // Don't fail the request if saving fails
+              logger.debug(
+                `[Responses API] Stored response ${responseId} in conversation ${conversationId}`,
+              );
+            } catch (saveError) {
+              logger.error('[Responses API] Error saving response:', saveError);
+              // Don't fail the request if saving fails
+            }
+          })();
         }
-      }
 
-      // Wait for artifact processing after response ends (non-blocking)
-      if (artifactPromises.length > 0) {
-        Promise.all(artifactPromises).catch((artifactError) => {
-          logger.warn('[Responses API] Error processing artifacts:', artifactError);
-        });
-      }
+        // Wait for artifact processing after response ends (non-blocking)
+        if (artifactPromises.length > 0) {
+          Promise.all(artifactPromises).catch((artifactError) => {
+            logger.warn('[Responses API] Error processing artifacts:', artifactError);
+          });
+        }
+      });
     } else {
       const aggregatorHandlers = createAggregatorEventHandlers(aggregator);
 
