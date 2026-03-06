@@ -501,36 +501,35 @@ const createResponse = async (req, res) => {
         },
       });
 
-      // Finalize the stream FIRST before doing any async work
-      // This ensures the client gets a clean stream closure
+      // Record token usage against balance BEFORE finalizing stream
+      // This ensures token data is saved before frontend refetches messages
+      const balanceConfig = getBalanceConfig(req.config);
+      const transactionsConfig = getTransactionsConfig(req.config);
+      await recordCollectedUsage(
+        { spendTokens, spendStructuredTokens },
+        {
+          user: userId,
+          conversationId,
+          messageId: responseId,
+          collectedUsage,
+          context: 'message',
+          balance: balanceConfig,
+          transactions: transactionsConfig,
+          model: primaryConfig.model || agent.model_parameters?.model,
+        },
+      ).catch((err) => {
+        logger.error('[Responses API] Error recording usage:', err);
+      });
+
+      // Now finalize the stream - token data is saved
       finalizeStream();
       res.end();
 
       const duration = Date.now() - requestStartTime;
       logger.debug(`[Responses API] Request ${responseId} completed in ${duration}ms (streaming)`);
 
-      // Record token usage against balance (fire-and-forget after stream closes)
-      const balanceConfig = getBalanceConfig(req.config);
-      const transactionsConfig = getTransactionsConfig(req.config);
-      // Schedule all post-response work to happen after stream closes
+      // Schedule database saves to happen after response is sent
       setImmediate(() => {
-        // Record token usage against balance
-        recordCollectedUsage(
-          { spendTokens, spendStructuredTokens },
-          {
-            user: userId,
-            conversationId,
-            messageId: responseId,
-            collectedUsage,
-            context: 'message',
-            balance: balanceConfig,
-            transactions: transactionsConfig,
-            model: primaryConfig.model || agent.model_parameters?.model,
-          },
-        ).catch((err) => {
-          logger.error('[Responses API] Error recording usage:', err);
-        });
-
         // Save to database if store: true
         if (request.store === true) {
           (async () => {
