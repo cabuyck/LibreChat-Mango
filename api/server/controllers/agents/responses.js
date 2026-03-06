@@ -530,9 +530,6 @@ const createResponse = async (req, res) => {
         });
       });
 
-      const duration = Date.now() - requestStartTime;
-      logger.debug(`[Responses API] Request ${responseId} completed in ${duration}ms (streaming)`);
-
       // Save to database if store: true
       if (request.store === true) {
         try {
