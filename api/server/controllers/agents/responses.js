@@ -501,28 +501,34 @@ const createResponse = async (req, res) => {
         },
       });
 
-      // Record token usage against balance
-      const balanceConfig = getBalanceConfig(req.config);
-      const transactionsConfig = getTransactionsConfig(req.config);
-      await recordCollectedUsage(
-        { spendTokens, spendStructuredTokens },
-        {
-          user: userId,
-          conversationId,
-          messageId: responseId,
-          collectedUsage,
-          context: 'message',
-          balance: balanceConfig,
-          transactions: transactionsConfig,
-          model: primaryConfig.model || agent.model_parameters?.model,
-        },
-      ).catch((err) => {
-        logger.error('[Responses API] Error recording usage:', err);
-      });
-
-      // Finalize the stream
+      // Finalize the stream FIRST before doing any async work
+      // This ensures the client gets a clean stream closure
       finalizeStream();
       res.end();
+
+      const duration = Date.now() - requestStartTime;
+      logger.debug(`[Responses API] Request ${responseId} completed in ${duration}ms (streaming)`);
+
+      // Record token usage against balance (fire-and-forget after stream closes)
+      const balanceConfig = getBalanceConfig(req.config);
+      const transactionsConfig = getTransactionsConfig(req.config);
+      setImmediate(() => {
+        recordCollectedUsage(
+          { spendTokens, spendStructuredTokens },
+          {
+            user: userId,
+            conversationId,
+            messageId: responseId,
+            collectedUsage,
+            context: 'message',
+            balance: balanceConfig,
+            transactions: transactionsConfig,
+            model: primaryConfig.model || agent.model_parameters?.model,
+          },
+        ).catch((err) => {
+          logger.error('[Responses API] Error recording usage:', err);
+        });
+      });
 
       const duration = Date.now() - requestStartTime;
       logger.debug(`[Responses API] Request ${responseId} completed in ${duration}ms (streaming)`);
