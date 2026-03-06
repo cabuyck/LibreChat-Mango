@@ -42,17 +42,17 @@ function formatNumber(num: number): string {
  */
 const TokenDisplay = ({ message, isLast }: TokenDisplayProps) => {
   const localize = useLocalize();
-  const { isCreatedByUser, inputTokens = 0, outputTokens = 0 } = message;
 
-  // Debug logging to help troubleshoot
-  useEffect(() => {
-    console.log('[TokenDisplay] Message:', {
-      messageId: message.messageId,
-      isCreatedByUser,
-      inputTokens,
-      outputTokens,
-    });
-  }, [message, isCreatedByUser, inputTokens, outputTokens]);
+  // Debug: log immediately when component renders
+  console.log('[TokenDisplay] RENDERED', {
+    messageId: message.messageId,
+    isCreatedByUser: message.isCreatedByUser,
+    inputTokens: message.inputTokens,
+    outputTokens: message.outputTokens,
+    fullMessage: message,
+  });
+
+  const { isCreatedByUser, inputTokens = 0, outputTokens = 0 } = message;
 
   // Get the appropriate token count based on message type
   const tokenCount = isCreatedByUser ? inputTokens : outputTokens;
@@ -74,8 +74,16 @@ const TokenDisplay = ({ message, isLast }: TokenDisplayProps) => {
         'md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100',
         !isLast && 'md:group-hover:opacity-100',
         'transition-opacity duration-200',
+        // Always visible for debugging
+        '!md:opacity-100 !md:visible',
       )}
+      style={{ border: '1px solid red', backgroundColor: 'yellow' }}
     >
+      {/* Debug info */}
+      <span className="text-[10px]">
+        ID: {message.messageId?.slice(0, 4)} | {isCreatedByUser ? 'USER' : 'AI'}
+      </span>
+
       {/* Token Count or placeholder */}
       {hasTokenData ? (
         <span className="flex items-center gap-1">
