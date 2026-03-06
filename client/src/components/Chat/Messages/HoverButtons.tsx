@@ -4,6 +4,7 @@ import type { TConversation, TMessage, TFeedback } from 'librechat-data-provider
 import { EditIcon, Clipboard, CheckMark, ContinueIcon, RegenerateIcon } from '@librechat/client';
 import { useGenerationsByLatest, useLocalize } from '~/hooks';
 import { Fork } from '~/components/Conversations';
+import TokenDisplay from './TokenDisplay';
 import MessageAudio from './MessageAudio';
 import Feedback from './Feedback';
 import { cn } from '~/utils';
@@ -186,6 +187,9 @@ const HoverButtons = ({
 
   return (
     <div className="group visible flex justify-center gap-0.5 self-end focus-within:outline-none lg:justify-start">
+      {/* Token Display - DEBUG: Always visible */}
+      <TokenDisplay message={message} isLast={isLast} />
+
       {/* Text to Speech */}
       {TextToSpeech && (
         <MessageAudio

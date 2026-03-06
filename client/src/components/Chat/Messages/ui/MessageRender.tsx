@@ -7,7 +7,6 @@ import MessageContent from '~/components/Chat/Messages/Content/MessageContent';
 import PlaceholderRow from '~/components/Chat/Messages/ui/PlaceholderRow';
 import SiblingSwitch from '~/components/Chat/Messages/SiblingSwitch';
 import HoverButtons from '~/components/Chat/Messages/HoverButtons';
-import TokenDisplay from '~/components/Chat/Messages/TokenDisplay';
 import MessageIcon from '~/components/Chat/Messages/MessageIcon';
 import { useLocalize, useMessageActions, useContentMetadata } from '~/hooks';
 import SubRow from '~/components/Chat/Messages/SubRow';
@@ -173,7 +172,6 @@ const MessageRender = memo(
             ) : (
               <SubRow classes="text-xs">
                 <div className="flex flex-wrap items-center gap-2">
-                  <TokenDisplay message={msg} isLast={isLast} />
                   <SiblingSwitch
                     siblingIdx={siblingIdx}
                     siblingCount={siblingCount}
