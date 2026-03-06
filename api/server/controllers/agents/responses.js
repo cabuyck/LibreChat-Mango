@@ -522,6 +522,15 @@ const createResponse = async (req, res) => {
       // This ensures token data is saved before frontend refetches messages
       const balanceConfig = getBalanceConfig(req.config);
       const transactionsConfig = getTransactionsConfig(req.config);
+
+      // DEBUG: Log collectedUsage to see what we have
+      logger.debug('[Responses API] recordCollectedUsage called with:', {
+        messageId: responseId,
+        conversationId,
+        collectedUsageCount: collectedUsage?.length || 0,
+        collectedUsage: collectedUsage,
+      });
+
       await recordCollectedUsage(
         { spendTokens, spendStructuredTokens },
         {

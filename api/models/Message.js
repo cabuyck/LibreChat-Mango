@@ -242,6 +242,16 @@ async function updateMessageTokens({
   cacheReadTokens = 0,
 }) {
   try {
+    // DEBUG: Log what we're trying to update
+    logger.debug('[updateMessageTokens] Called with params:', {
+      messageId,
+      user,
+      inputTokens,
+      outputTokens,
+      cacheWriteTokens,
+      cacheReadTokens,
+    });
+
     const tokenCount = inputTokens + outputTokens + cacheWriteTokens + cacheReadTokens;
     const result = await Message.findOneAndUpdate(
       { messageId, user },
