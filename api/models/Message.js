@@ -252,6 +252,16 @@ async function updateMessageTokens({
       cacheReadTokens,
     });
 
+    // Check if message exists first - if not, it will be created later with token data
+    const existingMessage = await Message.findOne({ messageId, user }).lean();
+    if (!existingMessage) {
+      logger.debug('[updateMessageTokens] Message does not exist yet - will be created later with token data', {
+        messageId,
+        user,
+      });
+      return; // Don't throw error, just skip - message will be created later
+    }
+
     const tokenCount = inputTokens + outputTokens + cacheWriteTokens + cacheReadTokens;
     const result = await Message.findOneAndUpdate(
       { messageId, user },
