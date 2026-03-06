@@ -19,9 +19,30 @@ const TokenDisplay = ({ message, isLast }: TokenDisplayProps) => {
     return null;
   }
 
+  // DEBUG: Log token values to see what we're getting
+  console.log('[TokenDisplay] messageId:', message.messageId, 'token data:', {
+    inputTokens,
+    outputTokens,
+    cacheReadTokens,
+    cacheWriteTokens,
+  });
+
   // Don't render if no token data available yet
   if (inputTokens === 0 && outputTokens === 0) {
-    return null;
+    // DEBUG: Show placeholder to indicate component is working but no data
+    return (
+      <div
+        className={cn(
+          'flex items-center gap-1.5 text-xs text-red-500',
+          'md:group-hover:visible md:group-focus-within:visible',
+          'md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100',
+          !isLast && 'md:group-hover:opacity-100',
+          'transition-opacity duration-200',
+        )}
+      >
+        <span className="font-medium">Tokens: No data (0/0)</span>
+      </div>
+    );
   }
 
   // Determine cache status: show checkmark if there are cache reads, X if there are cache writes
