@@ -243,7 +243,7 @@ async function updateMessageTokens({
 }) {
   try {
     const tokenCount = inputTokens + outputTokens + cacheWriteTokens + cacheReadTokens;
-    await Message.findOneAndUpdate(
+    const result = await Message.findOneAndUpdate(
       { messageId, user },
       {
         inputTokens,
@@ -252,9 +252,30 @@ async function updateMessageTokens({
         cacheReadTokens,
         tokenCount,
       },
+      { new: true },
     );
+
+    if (!result) {
+      logger.warn('[updateMessageTokens] Message not found', {
+        messageId,
+        user,
+        inputTokens,
+        outputTokens,
+        cacheWriteTokens,
+        cacheReadTokens,
+      });
+    } else {
+      logger.debug('[updateMessageTokens] Updated message tokens successfully', {
+        messageId,
+        inputTokens,
+        outputTokens,
+        cacheWriteTokens,
+        cacheReadTokens,
+        tokenCount,
+      });
+    }
   } catch (err) {
-    logger.error('Error updating message tokens:', err);
+    logger.error('[updateMessageTokens] Error updating message tokens:', err);
     throw err;
   }
 }
