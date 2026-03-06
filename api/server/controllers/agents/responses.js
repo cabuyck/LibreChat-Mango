@@ -185,7 +185,20 @@ async function saveResponseOutput(req, conversationId, responseId, response, age
     }
   }
 
-  // Save the assistant message
+  // Extract token breakdown from response usage
+  const usage = response.usage || {};
+  const inputTokens = usage.input_tokens || 0;
+  const outputTokens = usage.output_tokens || 0;
+  const cacheWriteTokens =
+    usage.input_token_details?.cache_write_input_tokens ||
+    usage.cache_creation_input_tokens ||
+    0;
+  const cacheReadTokens =
+    usage.input_token_details?.cache_read_input_tokens ||
+    usage.cache_read_input_tokens ||
+    0;
+
+  // Save the assistant message with full token breakdown
   await db.saveMessage(
     req,
     {
@@ -198,7 +211,11 @@ async function saveResponseOutput(req, conversationId, responseId, response, age
       endpoint: EModelEndpoint.agents,
       model: agentId,
       finish_reason: response.status === 'completed' ? 'stop' : response.status,
-      tokenCount: response.usage?.output_tokens,
+      tokenCount: outputTokens,
+      inputTokens,
+      outputTokens,
+      cacheWriteTokens,
+      cacheReadTokens,
     },
     { context: 'Responses API - save assistant response' },
   );
@@ -652,10 +669,10 @@ const createResponse = async (req, res) => {
         },
       });
 
-      // Record token usage against balance
+      // Record token usage against balance BEFORE saving response
       const balanceConfig = getBalanceConfig(req.config);
       const transactionsConfig = getTransactionsConfig(req.config);
-      await recordCollectedUsage(
+      recordCollectedUsage(
         { spendTokens, spendStructuredTokens },
         {
           user: userId,
