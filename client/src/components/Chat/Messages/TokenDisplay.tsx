@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { useLocalize } from '~/hooks';
 import type { TMessage } from 'librechat-data-provider';
 import { cn } from '~/utils';
@@ -44,6 +44,16 @@ const TokenDisplay = ({ message, isLast }: TokenDisplayProps) => {
   const localize = useLocalize();
   const { isCreatedByUser, inputTokens = 0, outputTokens = 0 } = message;
 
+  // Debug logging to help troubleshoot
+  useEffect(() => {
+    console.log('[TokenDisplay] Message:', {
+      messageId: message.messageId,
+      isCreatedByUser,
+      inputTokens,
+      outputTokens,
+    });
+  }, [message, isCreatedByUser, inputTokens, outputTokens]);
+
   // Get the appropriate token count based on message type
   const tokenCount = isCreatedByUser ? inputTokens : outputTokens;
   const tokenLabel = isCreatedByUser
@@ -73,7 +83,9 @@ const TokenDisplay = ({ message, isLast }: TokenDisplayProps) => {
           <span className="font-medium text-text-primary">{formatNumber(tokenCount)}</span>
         </span>
       ) : (
-        <span className="text-text-tertiary opacity-60">No token data</span>
+        <span className="text-text-tertiary opacity-60">
+          {isCreatedByUser ? 'No token data (user)' : 'No token data (assistant)'}
+        </span>
       )}
 
       {/* Cache Status Badge */}
