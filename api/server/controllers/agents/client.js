@@ -644,6 +644,7 @@ class AgentClient extends BaseClient {
     // Sum output_tokens directly from all entries - works for both sequential and parallel execution
     // This avoids the incremental calculation that produced negative values for parallel agents
     let total_output_tokens = 0;
+    const spendPromises = [];
 
     for (const usage of collectedUsage) {
       if (!usage) {
@@ -673,31 +674,38 @@ class AgentClient extends BaseClient {
       };
 
       if (cache_creation > 0 || cache_read > 0) {
-        spendStructuredTokens(txMetadata, {
-          promptTokens: {
-            input: usage.input_tokens,
-            write: cache_creation,
-            read: cache_read,
-          },
+        spendPromises.push(
+          spendStructuredTokens(txMetadata, {
+            promptTokens: {
+              input: usage.input_tokens,
+              write: cache_creation,
+              read: cache_read,
+            },
+            completionTokens: usage.output_tokens,
+          }).catch((err) => {
+            logger.error(
+              '[api/server/controllers/agents/client.js #recordCollectedUsage] Error spending structured tokens',
+              err,
+            );
+          }),
+        );
+        continue;
+      }
+      spendPromises.push(
+        spendTokens(txMetadata, {
+          promptTokens: usage.input_tokens,
           completionTokens: usage.output_tokens,
         }).catch((err) => {
           logger.error(
-            '[api/server/controllers/agents/client.js #recordCollectedUsage] Error spending structured tokens',
+            '[api/server/controllers/agents/client.js #recordCollectedUsage] Error spending tokens',
             err,
           );
-        });
-        continue;
-      }
-      spendTokens(txMetadata, {
-        promptTokens: usage.input_tokens,
-        completionTokens: usage.output_tokens,
-      }).catch((err) => {
-        logger.error(
-          '[api/server/controllers/agents/client.js #recordCollectedUsage] Error spending tokens',
-          err,
-        );
-      });
+        }),
+      );
     }
+
+    // Wait for all token spending to complete before returning
+    await Promise.all(spendPromises);
 
     this.usage = {
       input_tokens,

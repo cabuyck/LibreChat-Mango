@@ -49,7 +49,7 @@ const spendTokens = async (txData, tokenUsage) => {
     // Update message with token breakdown
     if (txData.messageId) {
       const { updateMessageTokens } = require('./Message');
-      updateMessageTokens({
+      await updateMessageTokens({
         messageId: txData.messageId,
         user: txData.user,
         inputTokens: normalizedPromptTokens,
@@ -136,7 +136,7 @@ const spendStructuredTokens = async (txData, tokenUsage) => {
     // Update message with token breakdown
     if (txData.messageId) {
       const { updateMessageTokens } = require('./Message');
-      updateMessageTokens({
+      await updateMessageTokens({
         messageId: txData.messageId,
         user: txData.user,
         inputTokens,

@@ -504,7 +504,7 @@ const createResponse = async (req, res) => {
       // Record token usage against balance
       const balanceConfig = getBalanceConfig(req.config);
       const transactionsConfig = getTransactionsConfig(req.config);
-      recordCollectedUsage(
+      await recordCollectedUsage(
         { spendTokens, spendStructuredTokens },
         {
           user: userId,
@@ -649,7 +649,7 @@ const createResponse = async (req, res) => {
       // Record token usage against balance
       const balanceConfig = getBalanceConfig(req.config);
       const transactionsConfig = getTransactionsConfig(req.config);
-      recordCollectedUsage(
+      await recordCollectedUsage(
         { spendTokens, spendStructuredTokens },
         {
           user: userId,
