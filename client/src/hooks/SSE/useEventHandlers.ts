@@ -589,10 +589,14 @@ export default function useEventHandlers({
       } finally {
         setShowStopButton(false);
         setIsSubmitting(false);
-        // Also invalidate conversation cost for cases where setConversation isn't called
         if (conversation?.conversationId) {
+          // Invalidate conversation cost query
           queryClient.invalidateQueries({
             queryKey: [QueryKeys.conversationCost, conversation.conversationId],
+          });
+          // Invalidate messages query to fetch updated token data from database
+          queryClient.invalidateQueries({
+            queryKey: [QueryKeys.messages, conversation.conversationId],
           });
         }
       }
