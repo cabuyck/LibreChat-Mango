@@ -29,6 +29,7 @@ import Artifacts from './Artifacts';
 import AgentTool from './AgentTool';
 import CodeForm from './Code/Form';
 import MCPTools from './MCPTools';
+import PromptInjection from './PromptInjection';
 
 const labelClass = 'mb-2 text-token-text-primary block font-medium';
 const inputClass = cn(
@@ -257,6 +258,8 @@ export default function AgentConfig() {
         </div>
         {/* Instructions */}
         <Instructions />
+        {/* Prompt Injection */}
+        <PromptInjection />
         {/* Model and Provider */}
         <div className="mb-4">
           <label className={labelClass} htmlFor="provider">

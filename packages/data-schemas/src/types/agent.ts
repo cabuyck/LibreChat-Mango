@@ -6,6 +6,13 @@ export interface ISupportContact {
   email?: string;
 }
 
+export interface PromptInjectionConfig {
+  [injectorId: string]: {
+    enabled: boolean;
+    config?: Record<string, unknown>;
+  };
+}
+
 export interface IAgent extends Omit<Document, 'model'> {
   id: string;
   name?: string;
@@ -44,4 +51,6 @@ export interface IAgent extends Omit<Document, 'model'> {
   mcpServerNames?: string[];
   /** Per-tool configuration (defer_loading, allowed_callers) */
   tool_options?: AgentToolOptions;
+  /** Prompt injection configuration */
+  prompt_injection?: PromptInjectionConfig;
 }

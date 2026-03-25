@@ -1,5 +1,5 @@
 const express = require('express');
-const { generateCheckAccess, skipAgentCheck } = require('@librechat/api');
+const { generateCheckAccess, skipAgentCheck, applyPromptInjection } = require('@librechat/api');
 const { PermissionTypes, Permissions, PermissionBits } = require('librechat-data-provider');
 const {
   moderateText,
@@ -30,6 +30,8 @@ router.use(checkAgentAccess);
 router.use(checkAgentResourceAccess);
 router.use(validateConvoAccess);
 router.use(buildEndpointOption);
+// Prompt injection middleware - must come before the controller
+router.use(applyPromptInjection);
 
 const controller = async (req, res, next) => {
   await AgentController(req, res, next, initializeClient, addTitle);

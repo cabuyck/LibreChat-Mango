@@ -1,4 +1,4 @@
-import { AgentCapabilities, ArtifactModes } from 'librechat-data-provider';
+import { AgentCapabilities, ArtifactModes, PromptInjectionConfig } from 'librechat-data-provider';
 import type {
   AgentModelParameters,
   AgentToolOptions,
@@ -50,4 +50,6 @@ export type AgentForm = {
   avatar_file?: File | null;
   avatar_preview?: string | null;
   avatar_action?: 'upload' | 'reset' | null;
+  /** Prompt injection configuration */
+  prompt_injection?: PromptInjectionConfig;
 } & TAgentCapabilities;

@@ -238,6 +238,15 @@ export type ToolOptions = {
  */
 export type AgentToolOptions = Record<string, ToolOptions>;
 
+/**
+ * Prompt injection configuration for agents.
+ * Maps injector IDs to their configuration (enabled status and custom config).
+ */
+export type PromptInjectionConfig = Record<string, {
+  enabled: boolean;
+  config?: Record<string, unknown>;
+}>;
+
 export type Agent = {
   _id?: string;
   id: string;
@@ -275,6 +284,8 @@ export type Agent = {
   support_contact?: SupportContact;
   /** Per-tool configuration options (deferred loading, allowed callers, etc.) */
   tool_options?: AgentToolOptions;
+  /** Prompt injection configuration */
+  prompt_injection?: PromptInjectionConfig;
 };
 
 export type TAgentsMap = Record<string, Agent | undefined>;
@@ -300,6 +311,7 @@ export type AgentCreateParams = {
   | 'category'
   | 'support_contact'
   | 'tool_options'
+  | 'prompt_injection'
 >;
 
 export type AgentUpdateParams = {
@@ -327,6 +339,7 @@ export type AgentUpdateParams = {
   | 'category'
   | 'support_contact'
   | 'tool_options'
+  | 'prompt_injection'
 >;
 
 export type AgentListParams = {

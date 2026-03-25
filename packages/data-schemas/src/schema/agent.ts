@@ -123,6 +123,11 @@ const agentSchema = new Schema<IAgent>(
       type: Schema.Types.Mixed,
       default: undefined,
     },
+    /** Prompt injection configuration */
+    prompt_injection: {
+      type: Schema.Types.Mixed,
+      default: undefined,
+    },
   },
   {
     timestamps: true,

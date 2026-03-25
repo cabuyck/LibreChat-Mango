@@ -31,6 +31,8 @@ export * from './memory';
 export * from './agents';
 /* Prompts */
 export * from './prompts';
+/* Injectors */
+export * from './injectors';
 /* Endpoints */
 export * from './endpoints';
 /* Files */
@@ -49,3 +51,6 @@ export { memoryDiagnostics } from './utils/memory';
 export type * from './mcp/types';
 export type * from './flow/types';
 export type * from './types';
+
+// Initialize built-in injectors on module load
+import './injectors/injectors';
