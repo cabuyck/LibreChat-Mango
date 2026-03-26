@@ -60,6 +60,15 @@ export const toolOptionsSchema = z.object({
 /** Agent tool options - map of tool_id to tool options */
 export const agentToolOptionsSchema = z.record(z.string(), toolOptionsSchema).optional();
 
+/** Per-injector options schema */
+export const injectorConfigSchema = z.object({
+  enabled: z.boolean().optional(),
+  config: z.record(z.unknown()).optional(),
+});
+
+/** Prompt injection configuration schema */
+export const promptInjectionSchema = z.record(z.string(), injectorConfigSchema).optional();
+
 /** Base agent schema with all common fields */
 export const agentBaseSchema = z.object({
   name: z.string().nullable().optional(),
@@ -78,6 +87,8 @@ export const agentBaseSchema = z.object({
   conversation_starters: z.array(z.string()).optional(),
   tool_resources: agentToolResourcesSchema,
   tool_options: agentToolOptionsSchema,
+  /** Prompt injection configuration */
+  prompt_injection: promptInjectionSchema,
   support_contact: agentSupportContactSchema,
   category: z.string().optional(),
 });
