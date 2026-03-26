@@ -257,6 +257,7 @@ export const defaultAgentFormValues = {
     name: '',
     email: '',
   },
+  prompt_injection: undefined,
 };
 
 export const ImageVisionTool: FunctionTool = {

@@ -116,6 +116,11 @@ export default function AgentSelect({
           return;
         }
 
+        if (name === 'prompt_injection' && typeof value === 'object' && value !== null) {
+          formValues[name] = value;
+          return;
+        }
+
         if (!keys.has(name)) {
           return;
         }
