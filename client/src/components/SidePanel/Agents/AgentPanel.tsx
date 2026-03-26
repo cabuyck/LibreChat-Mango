@@ -75,6 +75,7 @@ export function composeAgentUpdatePayload(data: AgentForm, agent_id?: string | n
     category,
     support_contact,
     tool_options,
+    prompt_injection,
     avatar_action: avatarActionState,
   } = data;
 
@@ -101,6 +102,7 @@ export function composeAgentUpdatePayload(data: AgentForm, agent_id?: string | n
       category,
       support_contact,
       tool_options,
+      prompt_injection,
       ...(shouldResetAvatar ? { avatar: null } : {}),
     },
     provider,
