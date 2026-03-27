@@ -30,9 +30,26 @@ async function getLastMessageTime(
   conversationId: string,
   userId: string,
 ): Promise<Date | undefined> {
-  // TODO: Implement message time fetching
-  // For now, return undefined to treat every message as first message
-  return undefined;
+  if (!conversationId || !userId) {
+    return undefined;
+  }
+
+  try {
+    // Import from the legacy API models using require
+    // This is a workaround because we can't use ES imports from the legacy directory
+    const Message = require('/app/api/models/Message');
+
+    // Get the most recent user message for this conversation
+    const lastMessage = await Message.findOne({
+      conversationId,
+      sender: 'User',
+    }).sort({ createdAt: -1 }).lean();
+
+    return lastMessage?.createdAt;
+  } catch (error) {
+    logger.error('[PromptInjection] Failed to fetch last message time', error);
+    return undefined;
+  }
 }
 
 /**
