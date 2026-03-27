@@ -23,7 +23,8 @@ const resolveAgentIdFromBody = async (agentCustomId) => {
     return null; // No permission check needed for ephemeral agents
   }
 
-  return await getAgent({ id: agentCustomId });
+  const agent = await getAgent({ id: agentCustomId });
+  return agent;
 };
 
 /**
@@ -72,6 +73,16 @@ const canAccessAgentFromBody = (options) => {
       if (isEphemeralAgentId(agentId)) {
         return next();
       }
+
+      // Fetch agent and store in req.body for downstream middleware
+      const agent = await getAgent({ id: agentId });
+      if (!agent) {
+        return res.status(404).json({
+          error: 'Not Found',
+          message: 'Agent not found',
+        });
+      }
+      req.body.agent = agent;
 
       const agentAccessMiddleware = canAccessResource({
         resourceType: ResourceType.AGENT,
