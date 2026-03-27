@@ -3,6 +3,8 @@ import type { InjectorContext } from '~/injectors/types';
 import { logger } from '@librechat/data-schemas';
 import type { PromptInjectionConfig } from '@librechat/data-schemas';
 import type { NextFunction, Request as ServerRequest, Response as ServerResponse } from 'express';
+import { getAgent } from '#/api/models/Agent';
+import { getMessages } from '#/api/models/Message';
 
 // CRITICAL: Log immediately when module is loaded to verify it's being imported
 logger.info('[PromptInjection] Middleware module loaded!');
@@ -35,7 +37,6 @@ async function getAgentWithInjection(req: ServerRequest): Promise<{
 
   try {
     logger.info(`[PromptInjection] Fetching agent from database: ${agent_id}`);
-    const { getAgent } = await import('~/models/Agent');
     const agent = await getAgent({ id: agent_id });
 
     if (agent) {
@@ -71,10 +72,6 @@ async function getLastMessageTime(
   }
 
   try {
-    // Dynamically import Message to avoid circular dependencies
-    // The Message model is in the legacy /api directory
-    const { getMessages } = await import('~/models/Message');
-
     // Get all messages for this conversation and user, sorted by creation date
     const messages = await getMessages(
       {
