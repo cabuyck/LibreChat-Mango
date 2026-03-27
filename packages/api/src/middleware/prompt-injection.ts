@@ -69,10 +69,16 @@ export async function applyPromptInjection(
   try {
     const agent = req.body?.agent;
 
+    // Debug logging
+    logger.debug('[PromptInjection] Agent data:', agent ? { id: agent.id, name: agent.name, hasPromptInjection: !!agent?.prompt_injection } : 'No agent');
+
     // Skip if no agent, no prompt injection config, or no user message
     if (!agent?.prompt_injection || !req.body?.text) {
+      logger.debug('[PromptInjection] Skipping - no agent/prompt_injection, or no text');
       return next();
     }
+
+    logger.debug('[PromptInjection] Config:', agent.prompt_injection);
 
     // Get last message time (returns undefined for new conversations or on error)
     const lastMessageTime = await getLastMessageTime(
@@ -104,8 +110,11 @@ export async function applyPromptInjection(
 
     // Prepend the injected content to the user's message
     if (injectedPrefix) {
-      req.body.text = `${injectedPrefix}\n\n${req.body.text}`;
-      logger.debug(`[PromptInjection] Applied ${injectedPrefix.length} characters of context`);
+      const originalText = req.body.text;
+      req.body.text = `${injectedPrefix}\n\n${originalText}`;
+      logger.info(`[PromptInjection] Applied injection. Original: "${originalText}", Injected: "${injectedPrefix}", Final: "${req.body.text}"`);
+    } else {
+      logger.warn('[PromptInjection] No injectors produced output');
     }
 
     next();
