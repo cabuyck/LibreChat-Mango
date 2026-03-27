@@ -79,7 +79,7 @@ export async function applyPromptInjection(
     // Get last message time (returns undefined for new conversations or on error)
     const lastMessageTime = await getLastMessageTime(
       req.body.conversationId,
-      req.user?.id,
+      req.user?.id ?? '',
     );
 
     // Build the injector context
