@@ -81,13 +81,20 @@ export async function applyPromptInjection(
     logger.info('[PromptInjection] req.body.text:', req.body?.text ? `"${req.body.text}"` : 'MISSING');
 
     const agent = req.body?.agent;
+    const isRegenerate = req.body?.isRegenerate === true;
 
     // Debug logging
     logger.info('[PromptInjection] Agent data:', agent ? { id: agent.id, name: agent.name, hasPromptInjection: !!agent?.prompt_injection, promptInjection: agent?.prompt_injection } : 'No agent');
+    logger.info('[PromptInjection] isRegenerate:', isRegenerate);
 
-    // Skip if no agent, no prompt injection config, or no user message
+    // Skip if no agent, no prompt injection config, no user message, or regenerating
     if (!agent?.prompt_injection || !req.body?.text) {
       logger.info('[PromptInjection] Skipping - no agent/prompt_injection, or no text');
+      return next();
+    }
+
+    if (isRegenerate) {
+      logger.info('[PromptInjection] Skipping - regeneration detected');
       return next();
     }
 
