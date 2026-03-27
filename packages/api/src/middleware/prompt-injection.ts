@@ -3,6 +3,9 @@ import type { InjectorContext } from '~/injectors/types';
 import { logger } from '@librechat/data-schemas';
 import type { NextFunction, Request as ServerRequest, Response as ServerResponse } from 'express';
 
+// CRITICAL: Log immediately when module is loaded to verify it's being imported
+logger.info('[PromptInjection] Middleware module loaded!');
+
 /**
  * Helper function to get the timestamp of the last user message in a conversation.
  * This is used by the time_since_last_message injector.
@@ -66,19 +69,26 @@ export async function applyPromptInjection(
   res: ServerResponse,
   next: NextFunction,
 ): Promise<void> {
+  // CRITICAL: Log EVERY time the middleware is called
+  logger.info('[PromptInjection] ===== MIDDLEWARE CALLED =====');
+
   try {
+    logger.info('[PromptInjection] Request body keys:', Object.keys(req.body || {}));
+    logger.info('[PromptInjection] req.body.agent:', req.body?.agent ? 'EXISTS' : 'MISSING');
+    logger.info('[PromptInjection] req.body.text:', req.body?.text ? `"${req.body.text}"` : 'MISSING');
+
     const agent = req.body?.agent;
 
     // Debug logging
-    logger.debug('[PromptInjection] Agent data:', agent ? { id: agent.id, name: agent.name, hasPromptInjection: !!agent?.prompt_injection } : 'No agent');
+    logger.info('[PromptInjection] Agent data:', agent ? { id: agent.id, name: agent.name, hasPromptInjection: !!agent?.prompt_injection, promptInjection: agent?.prompt_injection } : 'No agent');
 
     // Skip if no agent, no prompt injection config, or no user message
     if (!agent?.prompt_injection || !req.body?.text) {
-      logger.debug('[PromptInjection] Skipping - no agent/prompt_injection, or no text');
+      logger.info('[PromptInjection] Skipping - no agent/prompt_injection, or no text');
       return next();
     }
 
-    logger.debug('[PromptInjection] Config:', agent.prompt_injection);
+    logger.info('[PromptInjection] Config:', agent.prompt_injection);
 
     // Get last message time (returns undefined for new conversations or on error)
     const lastMessageTime = await getLastMessageTime(
@@ -112,7 +122,10 @@ export async function applyPromptInjection(
     if (injectedPrefix) {
       const originalText = req.body.text;
       req.body.text = `${injectedPrefix}\n\n${originalText}`;
-      logger.info(`[PromptInjection] Applied injection. Original: "${originalText}", Injected: "${injectedPrefix}", Final: "${req.body.text}"`);
+      logger.info(`[PromptInjection] ✓✓✓ APPLIED INJECTION! ✓✓✓`);
+      logger.info(`[PromptInjection] Original: "${originalText}"`);
+      logger.info(`[PromptInjection] Injected: "${injectedPrefix}"`);
+      logger.info(`[PromptInjection] Final: "${req.body.text}"`);
     } else {
       logger.warn('[PromptInjection] No injectors produced output');
     }
