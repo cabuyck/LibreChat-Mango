@@ -118,6 +118,10 @@ export async function applyPromptInjection(
       userMessage: req.body.text,
     };
 
+    // Add User-Agent to context for device type detection
+    (injectorContext as unknown as { userAgent?: string }).userAgent =
+      req.headers['user-agent'] as string;
+
     // Execute all enabled injectors
     const injectedPrefix = await executeInjectors(agent.prompt_injection, injectorContext);
 

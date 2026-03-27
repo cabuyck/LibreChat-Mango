@@ -75,6 +75,26 @@ const INJECTOR_DEFINITIONS: InjectorDefinition[] = [
       },
     ],
   },
+  {
+    id: 'device_type',
+    name: 'Device Type',
+    description: 'Inject information about your device',
+    defaultConfig: { format: 'device_os' },
+    configFields: [
+      {
+        name: 'format',
+        label: 'Detail Level',
+        type: 'select',
+        defaultValue: 'device_os',
+        options: [
+          { value: 'full', label: 'Full (user agent string)' },
+          { value: 'device_os', label: 'Device and OS' },
+          { value: 'device', label: 'Device only' },
+          { value: 'simple', label: 'Simple (Desktop/Mobile/Unknown)' },
+        ],
+      },
+    ],
+  },
 ];
 
 export default function PromptInjection() {

@@ -1,6 +1,7 @@
 import { injectorRegistry } from '../registry';
 import { currentDateInjector } from './current-date';
 import { timeSinceLastMessageInjector } from './time-since-last-message';
+import { deviceTypeInjector } from './device-type';
 
 /**
  * Register all built-in prompt injectors.
@@ -9,6 +10,7 @@ import { timeSinceLastMessageInjector } from './time-since-last-message';
 export function registerBuiltinInjectors(): void {
   injectorRegistry.register(currentDateInjector);
   injectorRegistry.register(timeSinceLastMessageInjector);
+  injectorRegistry.register(deviceTypeInjector);
 }
 
 // Auto-register built-in injectors on module load
