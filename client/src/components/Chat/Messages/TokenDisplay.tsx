@@ -7,48 +7,26 @@ type TokenDisplayProps = {
   isLast: boolean;
 };
 
-/**
- * Displays token information on message hover for assistant messages only
- * Shows: "Tokens in: x out: y cache hit: ✓/✗"
- */
 const TokenDisplay = ({ message, isLast }: TokenDisplayProps) => {
-  const { isCreatedByUser, inputTokens = 0, outputTokens = 0, cacheReadTokens = 0, cacheWriteTokens = 0 } = message;
+  const {
+    isCreatedByUser,
+    inputTokens = 0,
+    outputTokens = 0,
+    cacheReadTokens = 0,
+    cacheWriteTokens = 0,
+  } = message;
 
-  // Only show for assistant messages
   if (isCreatedByUser) {
     return null;
   }
 
-  // DEBUG: Log token values to see what we're getting
-  console.log('[TokenDisplay] messageId:', message.messageId, 'token data:', {
-    inputTokens,
-    outputTokens,
-    cacheReadTokens,
-    cacheWriteTokens,
-  });
-
-  // Don't render if no token data available yet
   if (inputTokens === 0 && outputTokens === 0) {
-    // DEBUG: Show placeholder to indicate component is working but no data
-    return (
-      <div
-        className={cn(
-          'flex items-center gap-1.5 text-xs text-red-500',
-          'md:group-hover:visible md:group-focus-within:visible',
-          'md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100',
-          !isLast && 'md:group-hover:opacity-100',
-          'transition-opacity duration-200',
-        )}
-      >
-        <span className="font-medium">Tokens: No data (0/0)</span>
-      </div>
-    );
+    return null;
   }
 
-  // Determine cache status: show checkmark if there are cache reads, X if there are cache writes
   const hasCacheHit = cacheReadTokens > 0;
   const hasCacheWrite = cacheWriteTokens > 0;
-  const cacheIndicator = hasCacheHit ? '✓' : hasCacheWrite ? '✗' : '–';
+  const cacheIndicator = hasCacheHit ? 'yes' : hasCacheWrite ? 'no' : '-';
 
   return (
     <div

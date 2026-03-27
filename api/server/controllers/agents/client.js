@@ -644,6 +644,8 @@ class AgentClient extends BaseClient {
     // Sum output_tokens directly from all entries - works for both sequential and parallel execution
     // This avoids the incremental calculation that produced negative values for parallel agents
     let total_output_tokens = 0;
+    let totalCacheWrite = 0;
+    let totalCacheRead = 0;
     const spendPromises = [];
 
     for (const usage of collectedUsage) {
@@ -661,6 +663,8 @@ class AgentClient extends BaseClient {
 
       // Accumulate output tokens for the usage summary
       total_output_tokens += Number(usage.output_tokens) || 0;
+      totalCacheWrite += cache_creation;
+      totalCacheRead += cache_read;
 
       const txMetadata = {
         context,
@@ -706,6 +710,13 @@ class AgentClient extends BaseClient {
 
     // Wait for all token spending to complete before returning
     await Promise.all(spendPromises);
+
+    this.tokenBreakdown = {
+      inputTokens: input_tokens,
+      outputTokens: total_output_tokens,
+      cacheWriteTokens: totalCacheWrite,
+      cacheReadTokens: totalCacheRead,
+    };
 
     this.usage = {
       input_tokens,

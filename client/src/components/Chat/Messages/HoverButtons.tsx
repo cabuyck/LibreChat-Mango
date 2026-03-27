@@ -187,7 +187,6 @@ const HoverButtons = ({
 
   return (
     <div className="group visible flex justify-center gap-0.5 self-end focus-within:outline-none lg:justify-start">
-      {/* Token Display - DEBUG: Always visible */}
       <TokenDisplay message={message} isLast={isLast} />
 
       {/* Text to Speech */}
