@@ -1,10 +1,58 @@
 import { executeInjectors } from '~/injectors';
 import type { InjectorContext } from '~/injectors/types';
 import { logger } from '@librechat/data-schemas';
+import type { PromptInjectionConfig } from '@librechat/data-schemas';
 import type { NextFunction, Request as ServerRequest, Response as ServerResponse } from 'express';
 
 // CRITICAL: Log immediately when module is loaded to verify it's being imported
 logger.info('[PromptInjection] Middleware module loaded!');
+
+/**
+ * Helper function to get the agent with prompt injection configuration.
+ * If req.body.agent exists with prompt_injection, returns it.
+ * Otherwise, fetches the agent from the database using agent_id.
+ *
+ * @param req - The Express request object
+ * @returns The agent object with prompt_injection, or undefined
+ */
+async function getAgentWithInjection(req: ServerRequest): Promise<{
+  agent?: { id: string; name?: string; prompt_injection?: PromptInjectionConfig };
+  agent_id?: string;
+}> {
+  const { agent_id } = req.body;
+
+  // If agent already exists in request body with prompt_injection, use it
+  if (req.body?.agent?.prompt_injection) {
+    logger.info('[PromptInjection] Using agent from request body');
+    return { agent: req.body.agent, agent_id };
+  }
+
+  // Otherwise, fetch from database using agent_id
+  if (!agent_id) {
+    logger.info('[PromptInjection] No agent_id in request');
+    return {};
+  }
+
+  try {
+    logger.info(`[PromptInjection] Fetching agent from database: ${agent_id}`);
+    const { getAgent } = await import('~/models/Agent');
+    const agent = await getAgent({ id: agent_id });
+
+    if (agent) {
+      logger.info(`[PromptInjection] Found agent: ${agent.id} (${agent.name})`);
+      logger.info(`[PromptInjection] Agent has prompt_injection: ${!!agent.prompt_injection}`);
+      // Store in req.body for downstream use
+      req.body.agent = agent;
+      return { agent, agent_id };
+    }
+
+    logger.warn(`[PromptInjection] Agent not found: ${agent_id}`);
+    return { agent_id };
+  } catch (error) {
+    logger.error('[PromptInjection] Failed to fetch agent', error);
+    return { agent_id };
+  }
+}
 
 /**
  * Helper function to get the timestamp of the last user message in a conversation.
@@ -75,9 +123,11 @@ export async function applyPromptInjection(
   try {
     logger.info('[PromptInjection] Request body keys:', Object.keys(req.body || {}));
     logger.info('[PromptInjection] req.body.agent:', req.body?.agent ? 'EXISTS' : 'MISSING');
+    logger.info('[PromptInjection] req.body.agent_id:', req.body?.agent_id ? `EXISTS: ${req.body.agent_id}` : 'MISSING');
     logger.info('[PromptInjection] req.body.text:', req.body?.text ? `"${req.body.text}"` : 'MISSING');
 
-    const agent = req.body?.agent;
+    // Get agent (either from request body or fetch from database)
+    const { agent } = await getAgentWithInjection(req);
 
     // Debug logging
     logger.info('[PromptInjection] Agent data:', agent ? { id: agent.id, name: agent.name, hasPromptInjection: !!agent?.prompt_injection, promptInjection: agent?.prompt_injection } : 'No agent');
