@@ -36,8 +36,8 @@ async function getLastMessageTime(
 
   try {
     // Import from the legacy API models using require
-    // This is a workaround because we can't use ES imports from the legacy directory
-    const Message = require('/app/api/models/Message');
+    // The Message model is in ~/db/models, which maps to /app/api/db/models
+    const { Message } = require('/app/api/db/models');
 
     // Get the most recent user message for this conversation
     const lastMessage = await Message.findOne({
