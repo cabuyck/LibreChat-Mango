@@ -210,8 +210,12 @@ export default function useEventHandlers({
       }
 
       if (isRegenerate) {
+        // For regeneration, update the user message if it exists
+        // This ensures UI shows the latest user message text (with any prompt injection)
+        const messagesWithoutUser = messages.filter((m) => m.messageId !== userMessage.messageId);
         setMessages([
-          ...messages,
+          ...messagesWithoutUser,
+          userMessage,  // Include updated user message
           {
             ...initialResponse,
             text,
